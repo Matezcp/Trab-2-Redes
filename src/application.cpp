@@ -3,13 +3,6 @@
 
 #include <iostream>
 
-#define MAX_MSG_LEN 46
-#define ERROR_CHECK_LEN 33
-#define FRAME_BEGIN_LEN 8
-#define FRAME_END_LEN 8
-#define FRAME_LEN (FRAME_BEGIN_LEN + ERROR_CHECK_LEN + FRAME_END_LEN)
-#define APP_HEADER_LEN 8
-
 void AplicacaoTransmissora(void) {
     std::string mensagem;
     std::cout << "Digite uma mensagem:" << std::endl;
@@ -21,7 +14,7 @@ void AplicacaoTransmissora(void) {
 
 void CamadaDeAplicacaoTransmissora(std::string mensagem) {
     //Aceito até 46 caracteres + 33 espaços para o CRC
-    int quadro[8*MAX_MSG_LEN + FRAME_LEN];
+    int quadro[2*8*MAX_MSG_LEN + FRAME_LEN];
 
     //Insere o tamanho da mensagem como header
     size_t tamanho = (mensagem.length() <= MAX_MSG_LEN) ? mensagem.length() : 46;
