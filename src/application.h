@@ -1,11 +1,7 @@
 #ifndef _APPLICATION_H
 #define _APPLICATION_H
 
-#include<string>
-#include<iostream>
-#include<bitset>
-#include <cstring>
-#include <sstream>
+#include <string>
 
 void AplicacaoTransmissora(void);
 void CamadaDeAplicacaoTransmissora(std::string mensagem);

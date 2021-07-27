@@ -1,7 +1,17 @@
 #include "application.h"
 #include "link.h"
 
-using namespace std;
+#include <iostream>
+#include <bitset>
+#include <cstring>
+#include <sstream>
+
+#define MAX_MSG_LEN 46
+#define ERROR_CHECK_LEN 33
+#define FRAME_BEGIN_LEN 8
+#define FRAME_END_LEN 8
+#define FRAME_LEN (FRAME_BEGIN_LEN + ERROR_CHECK_LEN + FRAME_END_LEN)
+#define APP_HEADER_LEN 8
 
 void AplicacaoTransmissora(void) {
     std::string mensagem;
@@ -13,43 +23,28 @@ void AplicacaoTransmissora(void) {
 }
 
 void CamadaDeAplicacaoTransmissora(std::string mensagem) {
-    //int quadro[] = mensagem //trabalhar com bits!!!
-    string binary = "";
     //Aceito até 46 caracteres + 33 espaços para o CRC
-    int quadro[8*46+33];
-    //Inializa tudo com -1 para controle de dados
-    memset (quadro,0,8*46+33);
-    //Transforma a palavra em binário
-    for (int i = 0; i < mensagem.size(); ++i)
-    {
-        //É pego 8 bits para cada letra
-        binary += bitset<8>(mensagem.c_str()[i]).to_string();
+    int quadro[8*MAX_MSG_LEN + FRAME_LEN];
+
+    //Insere o tamanho da mensagem como header
+    size_t tamanho = (mensagem.length() <= MAX_MSG_LEN) ? mensagem.length() : 46;
+    for(int i = 0; i < APP_HEADER_LEN; i++) {
+        quadro[i] = (tamanho >> (7-i)) & 1;
     }
 
-    cout << "Mensagem em bits: ";
-
-    //Coloca o binário no vetor quadro
-    for (int i = 0; i < binary.size(); ++i)
-    {
-        //Se chegarmos no valor máximo, a mensagem é truncada
-        if(i == 46){
-            break;
+    //Transforma a mensagem em binário
+    for (int i = 0; i < MAX_MSG_LEN; ++i) {
+        for(int j = 0; j < 8; ++j) {
+            quadro[APP_HEADER_LEN + (i*8+j)] = (mensagem[i] >> (7-j)) & 1;
         }
-        //Transforma em número o char
-        quadro[i] = int(binary[i]) - 48;
-        cout << quadro[i];
     }
-    
-    cout << endl;
 
     //chama a proxima chamada
     CamadaEnlaceDadosTransmissora(quadro);
-    
-    
 }
 
 void CamadaDeAplicacaoReceptora(int quadro[]) {
-    string mensagem = ""; //estava trabalhando com bits
+    std::string mensagem; //estava trabalhando com bits
 
     
     //TODO
