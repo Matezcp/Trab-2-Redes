@@ -2,9 +2,6 @@
 #include "link.h"
 
 #include <iostream>
-#include <bitset>
-#include <cstring>
-#include <sstream>
 
 #define MAX_MSG_LEN 46
 #define ERROR_CHECK_LEN 33
