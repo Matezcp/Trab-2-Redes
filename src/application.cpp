@@ -15,10 +15,10 @@ void AplicacaoTransmissora(void) {
 void CamadaDeAplicacaoTransmissora(std::string mensagem) {
     //int quadro[] = mensagem //trabalhar com bits!!!
     string binary = "";
-    //Aceito até 256 caracteres
-    int quadro[8*256+1];
+    //Aceito até 46 caracteres + 33 espaços para o CRC
+    int quadro[8*46+33];
     //Inializa tudo com -1 para controle de dados
-    memset (quadro,-1,8*256+1);
+    memset (quadro,0,8*46+33);
     //Transforma a palavra em binário
     for (int i = 0; i < mensagem.size(); ++i)
     {
@@ -32,7 +32,7 @@ void CamadaDeAplicacaoTransmissora(std::string mensagem) {
     for (int i = 0; i < binary.size(); ++i)
     {
         //Se chegarmos no valor máximo, a mensagem é truncada
-        if(i == 256){
+        if(i == 46){
             break;
         }
         //Transforma em número o char
@@ -47,24 +47,15 @@ void CamadaDeAplicacaoTransmissora(std::string mensagem) {
     
     
 }
+
 void CamadaDeAplicacaoReceptora(int quadro[]) {
-    int tipoDeControleDeErro = 0; //alterar de acordo com o teste
-    switch (tipoDeControleDeErro) {
-        case 0: //bit de paridade par
-            
-            break;
-        case 1: //bit de paridade impar
-            
-            break;
-        case 2: //CRC
-            //codigo
-            
-            //codigo
-            break;
-    }
-    //string message = quadro []; //estava trabalhando com bits
+    string mensagem = ""; //estava trabalhando com bits
+
     
-    //AplicacaoReceptora(mensagem);
+    //TODO
+    
+
+    AplicacaoReceptora(mensagem);
 }
 
 void AplicacaoReceptora(std::string mensagem) {

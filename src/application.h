@@ -5,6 +5,7 @@
 #include<iostream>
 #include<bitset>
 #include <cstring>
+#include <sstream>
 
 void AplicacaoTransmissora(void);
 void CamadaDeAplicacaoTransmissora(std::string mensagem);
