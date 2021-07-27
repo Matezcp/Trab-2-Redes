@@ -60,15 +60,17 @@ void AdicionaFrame(int quadro[]) {
             indiceBusca1++;
         }
         else {
-            indiceBusca1 = 0;
+            //Reinicia para 0 se o primeiro bit for diferente ou 1 se for igual
+            indiceBusca1 = (limitador[0] == quadro[i]);
         }
         
         //Procura pelo byte de escape
-        if(limitador[indiceBusca2] == quadro[i]) {
+        if(escape[indiceBusca2] == quadro[i]) {
             indiceBusca2++;
         }
         else {
-            indiceBusca2 = 0;
+            //Reinicia para 0 se o primeiro bit for diferente ou 1 se for igual
+            indiceBusca2 = (escape[0] == quadro[i]);
         }
         
         //Substitui por uma sequencia de escape se achou
