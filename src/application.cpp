@@ -48,6 +48,20 @@ void CamadaDeAplicacaoTransmissora(std::string mensagem) {
     
 }
 void CamadaDeAplicacaoReceptora(int quadro[]) {
+    int tipoDeControleDeErro = 0; //alterar de acordo com o teste
+    switch (tipoDeControleDeErro) {
+        case 0: //bit de paridade par
+            
+            break;
+        case 1: //bit de paridade impar
+            
+            break;
+        case 2: //CRC
+            //codigo
+            
+            //codigo
+            break;
+    }
     //string message = quadro []; //estava trabalhando com bits
     
     //AplicacaoReceptora(mensagem);
