@@ -5,7 +5,8 @@ using namespace std;
 void AplicacaoTransmissora(void) {
     std::string mensagem;
     std::cout << "Digite uma mensagem:" << std::endl;
-    std::cin >> mensagem;
+    //std::cin >> mensagem;
+    std::getline(std::cin, mensagem);
 
     CamadaDeAplicacaoTransmissora(mensagem);
 }
@@ -21,6 +22,8 @@ void CamadaDeAplicacaoTransmissora(std::string mensagem) {
       binary += bitset<8>(mensagem.c_str()[i]).to_string();
     }
 
+    cout << "Mensagem em bits: ";
+
     //Coloca o binário no vetor quadro
     for (int i = 0; i < binary.size(); ++i)
     {
@@ -34,7 +37,9 @@ void CamadaDeAplicacaoTransmissora(std::string mensagem) {
     }
     
     cout << endl;
+
     //chama a proxima chamada
+
     
     
 }
