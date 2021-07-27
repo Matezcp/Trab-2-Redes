@@ -7,6 +7,8 @@
 #define APP_HEADER_LEN 8
 #define APP_LEN (APP_HEADER_LEN + MAX_MSG_LEN)
 
+#define MAX_FRAME_LEN (2*8*MAX_MSG_LEN + FRAME_LEN)
+
 void AplicacaoTransmissora(void);
 void CamadaDeAplicacaoTransmissora(std::string mensagem);
 

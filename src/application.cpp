@@ -14,7 +14,7 @@ void AplicacaoTransmissora(void) {
 
 void CamadaDeAplicacaoTransmissora(std::string mensagem) {
     //Aceito até 46 caracteres + 33 espaços para o CRC
-    int quadro[2*8*MAX_MSG_LEN + FRAME_LEN];
+    int quadro[MAX_FRAME_LEN];
 
     //Insere o tamanho da mensagem como header
     size_t tamanho = (mensagem.length() <= MAX_MSG_LEN) ? mensagem.length() : 46;

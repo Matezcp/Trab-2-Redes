@@ -41,7 +41,7 @@ size_t LerTamanho(int quadro[]) {
 }
 
 void AdicionaFrame(int quadro[]) {
-    int buffer[2*8*MAX_MSG_LEN + FRAME_LEN];
+    int buffer[MAX_FRAME_LEN];
     size_t tamanho = LerTamanho(quadro);
 
     //Insere o inicio do frame no buffer
@@ -75,12 +75,13 @@ void AdicionaFrame(int quadro[]) {
         
         //Substitui por uma sequencia de escape se achou
         if(indiceBusca1 == 8 || indiceBusca2 == 8) {
-            EscapaByte(buffer-8, FRAME_BEGIN_LEN+i+quantEscapes*8, quadro+i);
+            EscapaByte(buffer, FRAME_BEGIN_LEN + i + quantEscapes*8 - 8, quadro+i);
+            //Reinicia os indices de busca
             indiceBusca1 = 0;
             indiceBusca2 = 0;
         }
         else {
-            quadro[FRAME_BEGIN_LEN + i + quantEscapes*8] = quadro[i];
+            buffer[FRAME_BEGIN_LEN + i + quantEscapes*8] = quadro[i];
         }
     }
 
@@ -155,66 +156,112 @@ void CamadaEnlaceDadosTransmissora(int quadro[]) {
     MeioDeComunicacao(quadro);
 }
 
+///////////////////////////////////////////////////////////////////////////////////
 
-bool CamadaEnlaceDadosReceptoraControleDeErroBitParidadePar(int quadro[]) {
+void RestauraByteEscapado(int quadro[], int indice, int* caracter) {
+    //Restaura o byte escapado com o bit 5 invertido
+    for(int i = 0; i < 8; ++i) {
+        quadro[indice+i] = (i != 5) ? caracter[i] : !caracter[i];
+    }
+}
+
+bool RemoveFrame(int quadro[]) {
+    int estado = 0; //Assume valores 0 (nao iniciado), 1 (lendo), 2 (terminado com sucesso)
+    int indiceBusca1 = 0;
+    int indiceBusca2 = 0;
+    size_t tamanho = 0;
+
+    for(int i = 0; i < MAX_FRAME_LEN; ++i) {
+        //Procura pelo byte de limite
+        if(limitador[indiceBusca1] == quadro[i]) {
+            indiceBusca1++;
+        }
+        else {
+            //Reinicia para 0 se o primeiro bit for diferente ou 1 se for igual
+            indiceBusca1 = (limitador[0] == quadro[i]);
+        }
+        
+        //Procura pelo byte de escape
+        if(escape[indiceBusca2] == quadro[i]) {
+            indiceBusca2++;
+        }
+        else {
+            //Reinicia para 0 se o primeiro bit for diferente ou 1 se for igual
+            indiceBusca2 = (escape[0] == quadro[i]);
+        }
+
+        if(indiceBusca1 == 8) {
+            //Avanca para o proximo estado
+            estado++;
+            //Remove do quadro o ultimo byte lido
+            tamanho -= 8;
+            //Reinicia os indices de busca
+            indiceBusca1 = 0;
+            indiceBusca2 = 0;
+        }
+        else if(indiceBusca2 == 8) {
+            //Restaura uma sequencia de escape se achou
+            RestauraByteEscapado(&quadro[tamanho], i-8, &quadro[i]);
+            //Reinicia os indices de busca
+            indiceBusca1 = 0;
+            indiceBusca2 = 0;
+        }
+        else {
+            quadro[tamanho] = quadro[i];
+            tamanho++;
+        }
+    }
+
+    return (estado == 2); // Checa se terminou com sucesso
+}
+
+void CamadaEnlaceDadosReceptoraControleDeErroBitParidadePar(int quadro[]) {
     if(NumOfOnes(quadro) % 2 == 0){ //Número par de 1's
-        std::cout << "Mensagem Válida" << std::endl;
-        return true;
+        std::cout << "Mensagem Recebida com Sucesso" << std::endl;
+        CamadaDeAplicacaoReceptora(quadro);
     }
     else{                           //Número impar de 1's
-        std::cout << "Erro encontrado" << std::endl;
-        return false;
+        std::cout << "Processo abortado, pois um erro na paridade foi encontrado" << std::endl;
     }
 }
 
-bool CamadaEnlaceDadosReceptoraControleDeErroBitParidadeImpar(int quadro[]) {
+void CamadaEnlaceDadosReceptoraControleDeErroBitParidadeImpar(int quadro[]) {
     if(NumOfOnes(quadro) % 2 != 0){ //Número Impar de 1's
-        std::cout << "Mensagem Válida" << std::endl;
-        return true;
+        std::cout << "Mensagem Recebida com Sucesso" << std::endl;
+        CamadaDeAplicacaoReceptora(quadro);
     }
     else{                           //Número Par de 1's
-        std::cout << "Erro encontrado" << std::endl;
-        return false;
+        std::cout << "Processo abortado, pois um erro na paridade foi encontrado" << std::endl;
     }
 }
 
-bool CamadaEnlaceDadosReceptoraControleDeErroCRC(int quadro[]) {
+void CamadaEnlaceDadosReceptoraControleDeErroCRC(int quadro[]) {
     //implementacao do algoritmo
     //usar polinomio CRC-32(IEEE 802)
 }
 
-bool CamadaEnlaceDadosReceptoraControleDeErro(int quadro[]) {
+void CamadaEnlaceDadosReceptoraControleDeErro(int quadro[]) {
     int tipoDeControleDeErro = 0; //alterar de acordo com o teste
     switch (tipoDeControleDeErro) {
         case 0: //bit de paridade par
-            if(CamadaEnlaceDadosReceptoraControleDeErroBitParidadePar(quadro))
-                return true;
-            return false;
+            CamadaEnlaceDadosReceptoraControleDeErroBitParidadePar(quadro);
             break;
         case 1: //bit de paridade impar
-            if(CamadaEnlaceDadosReceptoraControleDeErroBitParidadeImpar(quadro))
-                return true;
-            return false;
+            CamadaEnlaceDadosReceptoraControleDeErroBitParidadeImpar(quadro);
             break;
         case 2: //CRC
             //codigo
-            if(CamadaEnlaceDadosReceptoraControleDeErroCRC(quadro))
-                return true;
-            return false;
+            CamadaEnlaceDadosReceptoraControleDeErroCRC(quadro);
             //codigo
             break;
     }
-
-    return false;
 }
 
 void CamadaEnlaceDadosReceptora(int quadro[]) {
-
-    if(CamadaEnlaceDadosReceptoraControleDeErro(quadro)){
-        //chama a proxima camada
-        std::cout << "Mensagem Recebida com Sucesso" << std::endl;
-        CamadaDeAplicacaoReceptora(quadro);
+    if(RemoveFrame(quadro)) {
+        CamadaEnlaceDadosReceptoraControleDeErro(quadro);
     }
-    else
-        std::cout << "Processo abortado, pois um erro foi encontrado" << std::endl;
+    else {
+        std::cout << "Processo abortado, pois um erro no frame foi encontrado" << std::endl;
+    }
 }
