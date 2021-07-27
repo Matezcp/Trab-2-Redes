@@ -1,4 +1,5 @@
 #include "application.h"
+#include "link.h"
 
 using namespace std;
 
@@ -16,10 +17,13 @@ void CamadaDeAplicacaoTransmissora(std::string mensagem) {
     string binary = "";
     //Aceito até 256 caracteres
     int quadro[8*256];
+    //Inializa tudo com -1 para controle de dados
+    memset (quadro,-1,8*256);
     //Transforma a palavra em binário
     for (int i = 0; i < mensagem.size(); ++i)
     {
-      binary += bitset<8>(mensagem.c_str()[i]).to_string();
+        //É pego 8 bits para cada letra
+        binary += bitset<8>(mensagem.c_str()[i]).to_string();
     }
 
     cout << "Mensagem em bits: ";
@@ -39,7 +43,7 @@ void CamadaDeAplicacaoTransmissora(std::string mensagem) {
     cout << endl;
 
     //chama a proxima chamada
-
+    CamadaEnlaceDadosTransmissora(quadro);
     
     
 }
