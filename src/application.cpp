@@ -16,9 +16,9 @@ void CamadaDeAplicacaoTransmissora(std::string mensagem) {
     //int quadro[] = mensagem //trabalhar com bits!!!
     string binary = "";
     //Aceito até 256 caracteres
-    int quadro[8*256];
+    int quadro[8*256+1];
     //Inializa tudo com -1 para controle de dados
-    memset (quadro,-1,8*256);
+    memset (quadro,-1,8*256+1);
     //Transforma a palavra em binário
     for (int i = 0; i < mensagem.size(); ++i)
     {
