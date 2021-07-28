@@ -361,7 +361,8 @@ void CamadaEnlaceDadosReceptoraControleDeErroCRC(int quadro[]) {
     if(remainder.find('1') != std::string::npos){
         std::cout << "Processo abortado, pois um erro no frame foi encontrado" << std::endl;
     }else{
-        CamadaEnlaceDadosReceptoraControleDeErro(quadro);
+        std::cout << "Mensagem Recebida com Sucesso" << std::endl;
+        CamadaDeAplicacaoReceptora(quadro);
     }
 }
 
