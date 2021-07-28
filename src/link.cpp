@@ -8,10 +8,10 @@
 const int limitador[8] = {0, 1, 1, 1, 1, 1, 1, 0};
 const int escape[8] = {1, 0, 1, 1, 1, 1, 1, 0};
 
-int NumOfOnes(int quadro[]){
+int NumOfOnes(int quadro[], int tamanho){
     int count = 0;
 
-    for(int i = 0; i < APP_HEADER_LEN + MAX_MSG_LEN * 8 ; ++i){
+    for(int i = 0; i < tamanho; ++i){
         if(quadro[i] == 1)
             count++;
     }
@@ -55,7 +55,7 @@ void AdicionaFrame(int quadro[]) {
     int indiceBusca1 = 0;
     int indiceBusca2 = 0;
     int quantEscapes = 0;
-    for(int i = 0; i < APP_HEADER_LEN + tamanho*8; ++i) {
+    for(int i = 0; i < APP_HEADER_LEN + tamanho*8 + ERROR_CHECK_LEN; ++i) {
         //Procura pelo byte de limite
         if(limitador[indiceBusca1] == quadro[i]) {
             indiceBusca1++;
@@ -153,15 +153,15 @@ void CamadaEnlaceDadosTransmissoraControleDeErroBitParidadePar(int quadro[]) {
     //implementacao do algoritmo
     size_t tamanho = LerTamanho(quadro);
 
-    if(NumOfOnes(quadro) % 2 == 0){ //Número par de 1's
+    if(NumOfOnes(quadro, (tamanho+1)*8) % 2 == 0){ //Número par de 1's
         quadro[8*(tamanho+1)] = 0;
-        for(int i = 1; i < 33; ++i) {
+        for(int i = 1; i < ERROR_CHECK_LEN; ++i) {
             quadro[8*(tamanho+1) + i] = 0;
         }
     }
     else{                           //Número impar de 1's
         quadro[8*(tamanho+1)] = 1;
-        for(int i = 1; i < 33; ++i) {
+        for(int i = 1; i < ERROR_CHECK_LEN; ++i) {
             quadro[8*(tamanho+1) + i] = 0;
         }
     }
@@ -171,15 +171,15 @@ void CamadaEnlaceDadosTransmissoraControleDeErroBitParidadeImpar(int quadro[]) {
     //implementacao do algoritmo
     size_t tamanho = LerTamanho(quadro);
 
-    if(NumOfOnes(quadro) % 2 == 0){ //Número par de 1's
+    if(NumOfOnes(quadro, (tamanho+1)*8) % 2 == 0){ //Número par de 1's
         quadro[8*(tamanho+1)] = 1;
-        for(int i = 1; i < 33; ++i) {
+        for(int i = 1; i < ERROR_CHECK_LEN; ++i) {
             quadro[8*(tamanho+1) + i] = 0;
         }
     }
     else{                           //Número impar de 1's
         quadro[8*(tamanho+1)] = 0;
-        for(int i = 1; i < 33; ++i) {
+        for(int i = 1; i < ERROR_CHECK_LEN; ++i) {
             quadro[8*(tamanho+1) + i] = 0;
         }
     }
@@ -192,17 +192,23 @@ void CamadaEnlaceDadosTransmissoraControleDeErroCRC(int quadro[]) {
     std::string generator = "100000100110000010001110110110111";
     // Salva o quadro como string
     std::string data;
-    for(int i = 0; i < MAX_MSG_LEN; ++i) {
+
+    int tamanho = LerTamanho(quadro);
+
+    for(int i = 0; i < APP_HEADER_LEN + tamanho*8; ++i) {
         data.push_back(quadro[i] + '0');
     }
+
     // Adiciona no fim da mensagem o numero de bits do gerador-1 com 0
     for(int i = 0; i < (int)generator.size() - 1; ++i) {
         data.push_back('0');
     }
+    
     std::string remainder = mod2div(data,generator);
+
     // Adiciona resto no final da mensagem
     for(int i = 0; i < (int)remainder.size(); ++i){
-        quadro[MAX_MSG_LEN + i] = remainder[i] - '0';
+        quadro[APP_HEADER_LEN + tamanho*8 + i] = remainder[i] - '0';
     }
 }
 
@@ -225,7 +231,7 @@ void CamadaEnlaceDadosTransmissoraControleDeErro(int quadro[]) {
 
 void CamadaEnlaceDadosTransmissora(int quadro[]) {
     CamadaEnlaceDadosTransmissoraControleDeErro(quadro);
-    
+
     AdicionaFrame(quadro);
 
     //chama a proxima camada
@@ -241,7 +247,7 @@ void RestauraByteEscapado(int quadro[], int indice, int* caracter) {
     }
 }
 
-bool RemoveFrame(int quadro[]) {
+int RemoveFrame(int quadro[]) {
     int estado = 0; //Assume valores 0 (nao iniciado), 1 (lendo), 2 (terminado com sucesso)
     int indiceBusca1 = 0;
     int indiceBusca2 = 0;
@@ -292,11 +298,11 @@ bool RemoveFrame(int quadro[]) {
         }
     }
 
-    return (estado == 2); // Checa se terminou com sucesso
+    return (estado == 2) ? tamanho : -1; // Checa se terminou com sucesso
 }
 
-void CamadaEnlaceDadosReceptoraControleDeErroBitParidadePar(int quadro[]) {
-    if(NumOfOnes(quadro) % 2 == 0){ //Número par de 1's
+void CamadaEnlaceDadosReceptoraControleDeErroBitParidadePar(int quadro[], int tamanho) {
+    if(NumOfOnes(quadro, tamanho) % 2 == 0){ //Número par de 1's
         std::cout << "Mensagem Recebida com Sucesso" << std::endl;
         CamadaDeAplicacaoReceptora(quadro);
     }
@@ -305,8 +311,8 @@ void CamadaEnlaceDadosReceptoraControleDeErroBitParidadePar(int quadro[]) {
     }
 }
 
-void CamadaEnlaceDadosReceptoraControleDeErroBitParidadeImpar(int quadro[]) {
-    if(NumOfOnes(quadro) % 2 != 0){ //Número Impar de 1's
+void CamadaEnlaceDadosReceptoraControleDeErroBitParidadeImpar(int quadro[], int tamanho) {
+    if(NumOfOnes(quadro, tamanho) % 2 != 0){ //Número Impar de 1's
         std::cout << "Mensagem Recebida com Sucesso" << std::endl;
         CamadaDeAplicacaoReceptora(quadro);
     }
@@ -315,46 +321,49 @@ void CamadaEnlaceDadosReceptoraControleDeErroBitParidadeImpar(int quadro[]) {
     }
 }
 
-void CamadaEnlaceDadosReceptoraControleDeErroCRC(int quadro[]) {
+void CamadaEnlaceDadosReceptoraControleDeErroCRC(int quadro[], int tamanho) {
     //implementacao do algoritmo
     //usar polinomio CRC-32(IEEE 802)
     // Gerador polinominal x^16 x^15 x^2 + 1 de acordo com CRC-32(IEEE 802)
     std::string generator = "100000100110000010001110110110111";
     // Salva o quadro como string
     std::string data;
-    for(int i = 0; i < MAX_MSG_LEN; ++i) {
+    for(int i = 0; i < tamanho; ++i) {
         data.push_back(quadro[i] + '0');
     }
+    
     std::string remainder = mod2div(data,generator);
+    
     // Verifica se o resto foi diferente de 0
     if(remainder.find('1') != std::string::npos){
-        std::cout << "Processo abortado, pois um erro no frame foi encontrado" << std::endl;
+        std::cout << "Processo abortado, pois um erro no CRC foi encontrado" << std::endl;
     }else{
         std::cout << "Mensagem Recebida com Sucesso" << std::endl;
         CamadaDeAplicacaoReceptora(quadro);
     }
 }
 
-void CamadaEnlaceDadosReceptoraControleDeErro(int quadro[]) {
+void CamadaEnlaceDadosReceptoraControleDeErro(int quadro[], int tamanho) {
     int tipoDeControleDeErro = 0; //alterar de acordo com o teste
     switch (tipoDeControleDeErro) {
         case 0: //bit de paridade par
-            CamadaEnlaceDadosReceptoraControleDeErroBitParidadePar(quadro);
+            CamadaEnlaceDadosReceptoraControleDeErroBitParidadePar(quadro, tamanho);
             break;
         case 1: //bit de paridade impar
-            CamadaEnlaceDadosReceptoraControleDeErroBitParidadeImpar(quadro);
+            CamadaEnlaceDadosReceptoraControleDeErroBitParidadeImpar(quadro, tamanho);
             break;
         case 2: //CRC
             //codigo
-            CamadaEnlaceDadosReceptoraControleDeErroCRC(quadro);
+            CamadaEnlaceDadosReceptoraControleDeErroCRC(quadro, tamanho);
             //codigo
             break;
     }
 }
 
 void CamadaEnlaceDadosReceptora(int quadro[]) {
-    if(RemoveFrame(quadro)) {
-        CamadaEnlaceDadosReceptoraControleDeErro(quadro);
+    int tamanho = RemoveFrame(quadro);
+    if(tamanho >= 0) {
+        CamadaEnlaceDadosReceptoraControleDeErro(quadro, tamanho);
     }
     else {
         std::cout << "Processo abortado, pois um erro no frame foi encontrado" << std::endl;

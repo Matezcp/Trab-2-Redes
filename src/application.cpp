@@ -23,7 +23,7 @@ void CamadaDeAplicacaoTransmissora(std::string mensagem) {
     }
 
     //Transforma a mensagem em binário
-    for (int i = 0; i < MAX_MSG_LEN; ++i) {
+    for (int i = 0; i < tamanho; ++i) {
         for(int j = 0; j < 8; ++j) {
             quadro[APP_HEADER_LEN + (i*8+j)] = (mensagem[i] >> (7-j)) & 1;
         }
@@ -47,13 +47,16 @@ void CamadaDeAplicacaoReceptora(int quadro[]) {
     }
 
     char buffer[MAX_MSG_LEN+1];
+    for(int i = 0; i < MAX_MSG_LEN+1; ++i) {
+        buffer[i] = 0;
+    }
 
     for(size_t i = 0; i < tamanho; ++i) {
         for(int j = 0; j < 8; ++j) {
             buffer[i] |= quadro[(i+1)*8+j] << (7-j);
         }
     }
-    buffer[tamanho+1] = '\0';
+    buffer[tamanho] = '\0';
     
     std::string mensagem(buffer);
 
