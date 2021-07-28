@@ -3,6 +3,7 @@
 #include "application.h"
 
 #include <iostream>
+#include <string>
 
 const int limitador[8] = {0, 1, 1, 1, 1, 1, 1, 0};
 const int escape[8] = {1, 0, 1, 1, 1, 1, 1, 0};
@@ -96,6 +97,59 @@ void AdicionaFrame(int quadro[]) {
     }
 }
 
+/**
+ * Realiza a subtracao de dois valores binarios utilizando xor
+*/
+std::string completeXor(std::string a, std::string b){
+    std::string result = "";
+    for(int i = 1; i < b.length(); i++){
+        if (a[i] == b[i]){
+            result += "0";
+        }else{
+            result += "1";
+        }
+    }
+    return result;
+}
+
+/**
+ * Faz a divisao de dois valores binariosutilizando xor
+ * 
+*/
+std::string mod2div(std::string divident, std::string divisor){
+    int pick = divisor.length();
+     
+    // primeiro valor na subtracao da divisao deve ser do mesmo tamanho que o divisor
+    std::string remainder = divident.substr(0, pick);
+     
+    int n = divident.length();
+    while(pick < n){
+        if(remainder[0] == '1'){
+            // faz subtracao utilizando xor
+            remainder = completeXor(divisor, remainder);
+            // adiciona proximo bit do dividendo no resto
+            remainder += divident[pick];
+        }else{
+            // faz subtracao com zeros
+            remainder = completeXor(std::string(pick, '0'), remainder);
+            // adiciona proximo bit do dividendo
+            remainder += divident[pick];
+        }          
+        // vai para o proximo bit do dividendo no resto
+        pick += 1;
+    }
+
+    // verifica o ultimo bit
+    if (remainder[0] == '1'){
+        remainder = completeXor(divisor, remainder);
+    }
+    else{
+        remainder = completeXor(std::string(pick, '0'), remainder);
+    }
+         
+    return remainder;
+}
+
 void CamadaEnlaceDadosTransmissoraControleDeErroBitParidadePar(int quadro[]) {
     //implementacao do algoritmo
     size_t tamanho = LerTamanho(quadro);
@@ -128,10 +182,26 @@ void CamadaEnlaceDadosTransmissoraControleDeErroBitParidadeImpar(int quadro[]) {
 void CamadaEnlaceDadosTransmissoraControleDeErroCRC(int quadro[]) {
     //implementacao do algoritmo
     //usar polinomio CRC-32(IEEE 802)
+    // Gerador polinominal x^16 x^15 x^2 + 1 de acordo com CRC-32(IEEE 802)
+    std::string generator = "100000100110000010001110110110111";
+    // Salva o quadro como string
+    std::string data;
+    for(int i = 0; i < MAX_MSG_LEN; ++i) {
+        data.push_back(quadro[i] + '0');
+    }
+    // Adiciona no fim da mensagem o numero de bits do gerador-1 com 0
+    for(int i = 0; i < (int)generator.size() - 1; ++i) {
+        data.push_back('0');
+    }
+    std::string remainder = mod2div(data,generator);
+    // Adiciona resto no final da mensagem
+    for(int i = 0; i < (int)remainder.size(); ++i){
+        quadro[MAX_MSG_LEN + i] = remainder[i] - '0';
+    }
 }
 
 void CamadaEnlaceDadosTransmissoraControleDeErro(int quadro[]) {
-    int tipoDeControleDeErro = 0; //alterar de acordo com o teste
+    int tipoDeControleDeErro = 2; //alterar de acordo com o teste
     switch (tipoDeControleDeErro) {
         case 0: //bit de paridade par
             CamadaEnlaceDadosTransmissoraControleDeErroBitParidadePar(quadro);
