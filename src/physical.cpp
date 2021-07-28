@@ -25,6 +25,21 @@ void MeioDeComunicacao(int fluxoBrutoDeBits[]) {
             fluxoBrutoDeBitsPontoA[i] = fluxoBrutoDeBitsPontoB[i]--;
     }
 
+    /*
+    porcentagemDeErros = 0; //10%, 20%, 30%, 40%, ..., 100%
+    for(int i=0;i<MAX_FRAME_LEN;i++){
+        fluxoBrutoDeBitsPontoA[i] = fluxoBrutoDeBits[i];
+    }
+
+    for(int i=0;i<MAX_FRAME_LEN;i++){
+        if ((rand() % 100) > porcentagemDeErros) //fazer a probabilidade do erro
+            fluxoBrutoDeBitsPontoB[i] = fluxoBrutoDeBitsPontoA[i]; //BITS!!!
+        else
+            (fluxoBrutoDeBitsPontoA[i] == 0) ?
+            fluxoBrutoDeBitsPontoB[i] = fluxoBrutoDeBitsPontoA[i]++:
+            fluxoBrutoDeBitsPontoB[i] = fluxoBrutoDeBitsPontoA[i]--;
+    }*/
+
     /*while (fluxoBrutoDeBitsPontoB.length != fluxoBrutoDeBitsPontoA) {
         if ((rand() % 100) <= porcentagemDeErros) //fazer a probabilidade do erro
             fluxoBrutoDeBitsPontoB += fluxoBrutoDeBitsPontoA; //BITS!!!

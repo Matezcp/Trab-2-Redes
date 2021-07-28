@@ -41,14 +41,6 @@ void CamadaDeAplicacaoReceptora(int quadro[]) {
         tamanho |= quadro[i] << (7-i);
     }
 
-    std::cout << "\nTamanho app: " << tamanho << std::endl;
-
-    std::cout << "Quadro app: ";
-    for(int i = 0; i < MAX_MSG_LEN; ++i) {
-        std::cout << quadro[i] << ' ';
-    }
-    std::cout << '\n' << std::endl;
-
     if(tamanho > MAX_MSG_LEN) {
         std::cout << "Processo abortado, pois um erro no tamanho da string foi encontrado" << std::endl;
         return;
@@ -57,7 +49,9 @@ void CamadaDeAplicacaoReceptora(int quadro[]) {
     char buffer[MAX_MSG_LEN+1];
 
     for(size_t i = 0; i < tamanho; ++i) {
-        buffer[i] = quadro[i+8];
+        for(int j = 0; j < 8; ++j) {
+            buffer[i] |= quadro[(i+1)*8+j] << (7-j);
+        }
     }
     buffer[tamanho+1] = '\0';
     

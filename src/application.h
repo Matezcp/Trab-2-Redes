@@ -5,7 +5,7 @@
 
 #define MAX_MSG_LEN 46
 #define APP_HEADER_LEN 8
-#define APP_LEN (APP_HEADER_LEN + MAX_MSG_LEN)
+#define APP_LEN (APP_HEADER_LEN + 2 * MAX_MSG_LEN * 8)
 
 #define MAX_FRAME_LEN (2*8*MAX_MSG_LEN + FRAME_LEN)
 

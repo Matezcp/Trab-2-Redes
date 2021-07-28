@@ -10,7 +10,7 @@ const int escape[8] = {1, 0, 1, 1, 1, 1, 1, 0};
 int NumOfOnes(int quadro[]){
     int count = 0;
 
-    for(int i = 0; i <= 46 ; ++i){
+    for(int i = 0; i < APP_HEADER_LEN + MAX_MSG_LEN * 8 ; ++i){
         if(quadro[i] == 1)
             count++;
     }
@@ -44,14 +44,6 @@ void AdicionaFrame(int quadro[]) {
     int buffer[MAX_FRAME_LEN];
     size_t tamanho = LerTamanho(quadro);
 
-    std::cout << "Tamanho enlace out: " << 8 + tamanho << " - Mensagem: " << tamanho << std::endl;
-
-    std::cout << "Quadro enlace out: ";
-    for(int i = 0; i < MAX_MSG_LEN; ++i) {
-        std::cout << quadro[i] << ' ';
-    }
-    std::cout << std::endl;
-
     //Insere o inicio do frame no buffer
     for(int i = 0; i < 8; ++i) {
         buffer[i] = limitador[i];
@@ -62,7 +54,7 @@ void AdicionaFrame(int quadro[]) {
     int indiceBusca1 = 0;
     int indiceBusca2 = 0;
     int quantEscapes = 0;
-    for(int i = 0; i < tamanho; ++i) {
+    for(int i = 0; i < APP_HEADER_LEN + tamanho*8; ++i) {
         //Procura pelo byte de limite
         if(limitador[indiceBusca1] == quadro[i]) {
             indiceBusca1++;
@@ -93,13 +85,12 @@ void AdicionaFrame(int quadro[]) {
         }
     }
 
-    //Insere o fim do frame no buffer
     for(int i = 0; i < 8; ++i) {
-        buffer[FRAME_BEGIN_LEN + tamanho + quantEscapes*8 + i] = limitador[i];
+        buffer[FRAME_BEGIN_LEN + APP_HEADER_LEN + tamanho*8 + quantEscapes*8 + ERROR_CHECK_LEN + i] = limitador[i];
     }
 
     //Copia o buffer para o quadro
-    for(int i = 0; i < FRAME_BEGIN_LEN + tamanho + quantEscapes*8 + FRAME_END_LEN; ++i) {
+    for(int i = 0; i < FRAME_LEN + APP_HEADER_LEN + tamanho*8 + quantEscapes*8; ++i) {
         quadro[i] = buffer[i];
     }
 }
@@ -110,26 +101,33 @@ void CamadaEnlaceDadosTransmissoraControleDeErroBitParidadePar(int quadro[]) {
 
     if(NumOfOnes(quadro) % 2 == 0){ //Número par de 1's
         quadro[8*(tamanho+1)] = 0;
+        for(int i = 1; i < 33; ++i) {
+            quadro[8*(tamanho+1) + i] = 0;
+        }
     }
     else{                           //Número impar de 1's
         quadro[8*(tamanho+1)] = 1;
+        for(int i = 1; i < 33; ++i) {
+            quadro[8*(tamanho+1) + i] = 0;
+        }
     }
 }
 
 void CamadaEnlaceDadosTransmissoraControleDeErroBitParidadeImpar(int quadro[]) {
     //implementacao do algoritmo
-    size_t tamanho = 0;
-    
-    //Lê o tamanho da mensagem
-    for(int i = 0; i < 8; ++i) {
-        tamanho = quadro[i] << (7-i);
-    }
+    size_t tamanho = LerTamanho(quadro);
 
     if(NumOfOnes(quadro) % 2 == 0){ //Número par de 1's
         quadro[8*(tamanho+1)] = 1;
+        for(int i = 1; i < 33; ++i) {
+            quadro[8*(tamanho+1) + i] = 0;
+        }
     }
     else{                           //Número impar de 1's
         quadro[8*(tamanho+1)] = 0;
+        for(int i = 1; i < 33; ++i) {
+            quadro[8*(tamanho+1) + i] = 0;
+        }
     }
 }
 
@@ -179,27 +177,6 @@ bool RemoveFrame(int quadro[]) {
     int indiceBusca2 = 0;
     size_t tamanho = 0;
 
-    /////////////[DEBUG]/////////////
-    std::cout << "\nFrame original in: ";
-    int indiceBusca3 = 0;
-    for(int i = 0; i < MAX_FRAME_LEN; ++i) {
-        if(i > 7) {
-            if(limitador[indiceBusca3] == quadro[i]) {
-                indiceBusca3++;
-            }
-            else {
-                indiceBusca3 = (limitador[0] == quadro[i]);
-            }
-            if(indiceBusca3 == 8) {
-                std::cout << quadro[i];
-                break;
-            }
-        }
-        std::cout << quadro[i] << ' ';
-    }
-    std::cout << '\n' << std::endl;
-    ////////////////////////////////
-
     for(int i = 0; i < MAX_FRAME_LEN; ++i) {
         if(estado == 2) {
             break;
@@ -244,14 +221,6 @@ bool RemoveFrame(int quadro[]) {
             tamanho++;
         }
     }
-
-    std::cout << "Tamanho enlace in: " << tamanho << " - Mensagem: " << (int)tamanho - 8 << std::endl;
-
-    std::cout << "Quadro enlace in: ";
-    for(int i = 0; i < MAX_MSG_LEN; ++i) {
-        std::cout << quadro[i] << ' ';
-    }
-    std::cout << '\n' << std::endl;
 
     return (estado == 2); // Checa se terminou com sucesso
 }
