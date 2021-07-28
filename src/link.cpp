@@ -207,7 +207,7 @@ void CamadaEnlaceDadosTransmissoraControleDeErroCRC(int quadro[]) {
 }
 
 void CamadaEnlaceDadosTransmissoraControleDeErro(int quadro[]) {
-    int tipoDeControleDeErro = 2; //alterar de acordo com o teste
+    int tipoDeControleDeErro = 0; //alterar de acordo com o teste
     switch (tipoDeControleDeErro) {
         case 0: //bit de paridade par
             CamadaEnlaceDadosTransmissoraControleDeErroBitParidadePar(quadro);
