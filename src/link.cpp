@@ -34,7 +34,7 @@ size_t LerTamanho(int quadro[]) {
     
     //Lê o tamanho da mensagem
     for(int i = 0; i < 8; ++i) {
-        tamanho = quadro[i] << (7-i);
+        tamanho |= quadro[i] << (7-i);
     }
 
     return tamanho;
@@ -43,6 +43,14 @@ size_t LerTamanho(int quadro[]) {
 void AdicionaFrame(int quadro[]) {
     int buffer[MAX_FRAME_LEN];
     size_t tamanho = LerTamanho(quadro);
+
+    std::cout << "Tamanho enlace out: " << 8 + tamanho << " - Mensagem: " << tamanho << std::endl;
+
+    std::cout << "Quadro enlace out: ";
+    for(int i = 0; i < MAX_MSG_LEN; ++i) {
+        std::cout << quadro[i] << ' ';
+    }
+    std::cout << std::endl;
 
     //Insere o inicio do frame no buffer
     for(int i = 0; i < 8; ++i) {
@@ -171,7 +179,32 @@ bool RemoveFrame(int quadro[]) {
     int indiceBusca2 = 0;
     size_t tamanho = 0;
 
+    /////////////[DEBUG]/////////////
+    std::cout << "\nFrame original in: ";
+    int indiceBusca3 = 0;
     for(int i = 0; i < MAX_FRAME_LEN; ++i) {
+        if(i > 7) {
+            if(limitador[indiceBusca3] == quadro[i]) {
+                indiceBusca3++;
+            }
+            else {
+                indiceBusca3 = (limitador[0] == quadro[i]);
+            }
+            if(indiceBusca3 == 8) {
+                std::cout << quadro[i];
+                break;
+            }
+        }
+        std::cout << quadro[i] << ' ';
+    }
+    std::cout << '\n' << std::endl;
+    ////////////////////////////////
+
+    for(int i = 0; i < MAX_FRAME_LEN; ++i) {
+        if(estado == 2) {
+            break;
+        }
+
         //Procura pelo byte de limite
         if(limitador[indiceBusca1] == quadro[i]) {
             indiceBusca1++;
@@ -194,7 +227,7 @@ bool RemoveFrame(int quadro[]) {
             //Avanca para o proximo estado
             estado++;
             //Remove do quadro o ultimo byte lido
-            tamanho -= 8;
+            tamanho -= 7;
             //Reinicia os indices de busca
             indiceBusca1 = 0;
             indiceBusca2 = 0;
@@ -211,6 +244,14 @@ bool RemoveFrame(int quadro[]) {
             tamanho++;
         }
     }
+
+    std::cout << "Tamanho enlace in: " << tamanho << " - Mensagem: " << (int)tamanho - 8 << std::endl;
+
+    std::cout << "Quadro enlace in: ";
+    for(int i = 0; i < MAX_MSG_LEN; ++i) {
+        std::cout << quadro[i] << ' ';
+    }
+    std::cout << '\n' << std::endl;
 
     return (estado == 2); // Checa se terminou com sucesso
 }

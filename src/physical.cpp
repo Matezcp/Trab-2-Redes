@@ -1,23 +1,22 @@
 #include "physical.h"
+#include "link.h"
 #include "application.h"
 #include <iostream>
 
 using namespace std;
 
-#define MAX_LENGHT 8*46+33
-
 void MeioDeComunicacao(int fluxoBrutoDeBits[]) {
     //OBS: trabalhar com BITS e nao com BYTES!!!
     int erro, porcentagemDeErros;
-    int fluxoBrutoDeBitsPontoA[MAX_LENGHT], fluxoBrutoDeBitsPontoB[MAX_LENGHT];
+    int fluxoBrutoDeBitsPontoA[MAX_FRAME_LEN], fluxoBrutoDeBitsPontoB[MAX_FRAME_LEN];
     memset(fluxoBrutoDeBitsPontoB,0,sizeof fluxoBrutoDeBitsPontoB);
 
     porcentagemDeErros = 0; //10%, 20%, 30%, 40%, ..., 100%
-    for(int i=0;i<MAX_LENGHT;i++){
+    for(int i=0;i<MAX_FRAME_LEN;i++){
         fluxoBrutoDeBitsPontoA[i] = fluxoBrutoDeBits[i];
     }
 
-    for(int i=0;i<MAX_LENGHT;i++){
+    for(int i=0;i<MAX_FRAME_LEN;i++){
         if ((rand() % 100) >= porcentagemDeErros) //fazer a probabilidade do erro
             fluxoBrutoDeBitsPontoB[i] += fluxoBrutoDeBitsPontoA[i]; //BITS!!!
         else
@@ -36,11 +35,11 @@ void MeioDeComunicacao(int fluxoBrutoDeBits[]) {
     }*/
 
     //Atualiza o fluxo
-    for(int i=0;i<MAX_LENGHT;i++){
+    for(int i=0;i<MAX_FRAME_LEN;i++){
          fluxoBrutoDeBits[i] = fluxoBrutoDeBitsPontoA[i];
     }
 
     //cout << fluxoBrutoDeBits[0] << fluxoBrutoDeBits[1] << endl;
 
-    CamadaDeAplicacaoReceptora(fluxoBrutoDeBits);
+    CamadaEnlaceDadosReceptora(fluxoBrutoDeBits);
 }

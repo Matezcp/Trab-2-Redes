@@ -34,11 +34,34 @@ void CamadaDeAplicacaoTransmissora(std::string mensagem) {
 }
 
 void CamadaDeAplicacaoReceptora(int quadro[]) {
-    std::string mensagem; //estava trabalhando com bits
+    size_t tamanho = 0;
+    
+    //Lê o tamanho da mensagem
+    for(int i = 0; i < 8; ++i) {
+        tamanho |= quadro[i] << (7-i);
+    }
 
+    std::cout << "\nTamanho app: " << tamanho << std::endl;
+
+    std::cout << "Quadro app: ";
+    for(int i = 0; i < MAX_MSG_LEN; ++i) {
+        std::cout << quadro[i] << ' ';
+    }
+    std::cout << '\n' << std::endl;
+
+    if(tamanho > MAX_MSG_LEN) {
+        std::cout << "Processo abortado, pois um erro no tamanho da string foi encontrado" << std::endl;
+        return;
+    }
+
+    char buffer[MAX_MSG_LEN+1];
+
+    for(size_t i = 0; i < tamanho; ++i) {
+        buffer[i] = quadro[i+8];
+    }
+    buffer[tamanho+1] = '\0';
     
-    //TODO
-    
+    std::string mensagem(buffer);
 
     AplicacaoReceptora(mensagem);
 }
