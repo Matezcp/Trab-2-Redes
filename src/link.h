@@ -11,5 +11,10 @@ void CamadaEnlaceDadosTransmissoraControleDeErro(int quadro[]);
 void CamadaEnlaceDadosTransmissoraControleDeErroBitParidadePar(int quadro[]);
 void CamadaEnlaceDadosTransmissoraControleDeErroBitParidadeImpar(int quadro[]);
 void CamadaEnlaceDadosTransmissoraControleDeErroCRC(int quadro[]);
+void CamadaEnlaceDadosReceptora(int quadro[]);
+void CamadaEnlaceDadosReceptoraControleDeErro(int quadro[]);
+void CamadaEnlaceDadosReceptoraControleDeErroBitParidadePar(int quadro[]);
+void CamadaEnlaceDadosReceptoraControleDeErroBitParidadeImpar(int quadro[]);
+void CamadaEnlaceDadosReceptoraControleDeErroCRC(int quadro[]);
 
 #endif
