@@ -349,10 +349,24 @@ void CamadaEnlaceDadosReceptoraControleDeErroBitParidadeImpar(int quadro[]) {
 void CamadaEnlaceDadosReceptoraControleDeErroCRC(int quadro[]) {
     //implementacao do algoritmo
     //usar polinomio CRC-32(IEEE 802)
+    // Gerador polinominal x^16 x^15 x^2 + 1 de acordo com CRC-32(IEEE 802)
+    std::string generator = "100000100110000010001110110110111";
+    // Salva o quadro como string
+    std::string data;
+    for(int i = 0; i < MAX_MSG_LEN; ++i) {
+        data.push_back(quadro[i] + '0');
+    }
+    std::string remainder = mod2div(data,generator);
+    // Verifica se o resto foi diferente de 0
+    if(remainder.find('1') != std::string::npos){
+        std::cout << "Processo abortado, pois um erro no frame foi encontrado" << std::endl;
+    }else{
+        CamadaEnlaceDadosReceptoraControleDeErro(quadro);
+    }
 }
 
 void CamadaEnlaceDadosReceptoraControleDeErro(int quadro[]) {
-    int tipoDeControleDeErro = 0; //alterar de acordo com o teste
+    int tipoDeControleDeErro = 2; //alterar de acordo com o teste
     switch (tipoDeControleDeErro) {
         case 0: //bit de paridade par
             CamadaEnlaceDadosReceptoraControleDeErroBitParidadePar(quadro);
